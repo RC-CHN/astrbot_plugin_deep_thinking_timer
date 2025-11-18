@@ -1,0 +1,8 @@
+{
+    "target_user_ids": {
+        "type": "list",
+        "description": "目标用户ID列表",
+        "hint": "需要启用深度思考计时器的用户QQ号列表",
+        "default": []
+    }
+}
