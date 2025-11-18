@@ -1,24 +1,54 @@
-from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
+from astrbot.api.event import AstrMessageEvent
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
+from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import (
+    AiocqhttpMessageEvent,
+)
 
-@register("helloworld", "YourName", "一个简单的 Hello World 插件", "1.0.0")
+
+@register("astrbot_plugin_deep_thinking_timer", "Roo", "深度思考计时器插件", "0.1.0")
 class MyPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
 
     async def initialize(self):
         """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""
+        pass
 
-    # 注册指令的装饰器。指令名为 helloworld。注册成功后，发送 `/helloworld` 就会触发这个指令，并回复 `你好, {user_name}!`
-    @filter.command("helloworld")
-    async def helloworld(self, event: AstrMessageEvent):
-        """这是一个 hello world 指令""" # 这是 handler 的描述，将会被解析方便用户了解插件内容。建议填写。
-        user_name = event.get_sender_name()
-        message_str = event.message_str # 用户发的纯文本消息字符串
-        message_chain = event.get_messages() # 用户所发的消息的消息链 # from astrbot.api.message_components import *
-        logger.info(message_chain)
-        yield event.plain_result(f"Hello, {user_name}, 你发了 {message_str}!") # 发送一条纯文本消息
+    async def _set_user_nickname(
+        self, event: AstrMessageEvent, user_id: str, nickname: str
+    ):
+        """辅助函数：设置群名片"""
+        # This function is platform-specific (e.g., QQ/aiocqhttp)
+        if not isinstance(event, AiocqhttpMessageEvent):
+            logger.warning(
+                f"Attempted to set nickname in a non-aiocqhttp context: {event.get_platform_name()}"
+            )
+            return False
+
+        try:
+            group_id = event.get_group_id()
+            self_id = event.get_self_id()
+            if not group_id:
+                logger.warning("Attempted to set nickname outside of a group chat.")
+                return False
+
+            await event.bot.set_group_card(
+                group_id=int(group_id),
+                self_id=int(self_id),
+                user_id=int(user_id),
+                card=nickname,
+            )
+            logger.info(
+                f"Successfully set nickname for user {user_id} in group {group_id} to '{nickname}'."
+            )
+            return True
+        except Exception as e:
+            logger.error(
+                f"Failed to set nickname for user {user_id} in group {group_id}: {e}"
+            )
+            return False
 
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
+        pass
