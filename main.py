@@ -6,7 +6,7 @@ from astrbot.api import logger, AstrBotConfig
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
 
 
-@register("astrbot_plugin_deep_thinking_timer", "Roo", "深度思考计时器插件", "0.1.0")
+@register("astrbot_plugin_deep_thinking_timer", "RC-CHN", "深度思考计时器插件", "0.1.0")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -41,7 +41,7 @@ class MyPlugin(Star):
         if sender_id in self.last_message_time:
             elapsed_time = int(current_time - self.last_message_time[sender_id])
             if elapsed_time > 1: # 避免过于频繁的修改
-                new_nickname = f"{original_nickname} (已深度思考{elapsed_time}秒)"
+                new_nickname = f"{original_nickname}   已深度思考 {elapsed_time} 秒"
                 logger.info(f"用户 {sender_id} 深度思考了 {elapsed_time} 秒, 准备修改昵称为: {new_nickname}")
                 await self._set_user_nickname(event, sender_id, new_nickname)
 
