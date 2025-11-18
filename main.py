@@ -6,7 +6,7 @@ from astrbot.api import logger, AstrBotConfig
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
 
 
-@register("astrbot_plugin_deep_thinking_timer", "RC-CHN", "深度思考计时器插件", "0.1.0")
+@register("astrbot_plugin_deep_thinking_timer", "RC-CHN", "深度思考计时器插件", "0.2.0")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -41,12 +41,32 @@ class MyPlugin(Star):
         if sender_id in self.last_message_time:
             elapsed_time = int(current_time - self.last_message_time[sender_id])
             if elapsed_time > 1: # 避免过于频繁的修改
-                new_nickname = f"{original_nickname}   已深度思考 {elapsed_time} 秒"
+                duration_str = self._format_duration(elapsed_time)
+                new_nickname = f"{original_nickname.strip()} (已深度思考{duration_str})"
                 logger.info(f"用户 {sender_id} 深度思考了 {elapsed_time} 秒, 准备修改昵称为: {new_nickname}")
                 await self._set_user_nickname(event, sender_id, new_nickname)
 
         self.last_message_time[sender_id] = current_time
 
+    def _format_duration(self, seconds: int) -> str:
+        if seconds < 60:
+            return f"{seconds}秒"
+
+        minutes, seconds = divmod(seconds, 60)
+        hours, minutes = divmod(minutes, 60)
+        days, hours = divmod(hours, 24)
+
+        parts = []
+        if days > 0:
+            parts.append(f"{days}天")
+        if hours > 0:
+            parts.append(f"{hours}小时")
+        if minutes > 0:
+            parts.append(f"{minutes}分钟")
+        if seconds > 0:
+            parts.append(f"{seconds}秒")
+
+        return "".join(parts)
 
     async def _set_user_nickname(self, event: AiocqhttpMessageEvent, user_id: str, nickname: str):
         """辅助函数：设置群名片"""
