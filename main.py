@@ -32,7 +32,7 @@ class MyPlugin(Star):
         current_nickname = event.get_sender_name()
 
         # 解析原始昵称
-        match = re.match(r"^(.*?)\s*\(已深度思考\d+秒\)$", current_nickname)
+        match = re.match(r"^(.*?)\s*\(已深度思考.*?\)$", current_nickname)
         if match:
             original_nickname = match.group(1)
         else:
